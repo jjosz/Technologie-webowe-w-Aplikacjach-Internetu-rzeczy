@@ -16,7 +16,37 @@ class DataController implements Controller {
 
 
     private initializeRoutes() {
-        this.router.get(`${this.path}/get`, this.dataService.getAll);
+        this.router.get(`${this.path}/get`, this.getAll);
+        this.router.post(`${this.path}/add`, this.addData);
+        this.router.delete(`${this.path}/delete/:id`, this.deleteData);
+         };
+    private getAll = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+             const data = await this.dataService.getAll();
+             res.status(200).json(data);
+             } catch (error) {
+             next(error);
+             }
+    };
+
+    private addData = async (request: Request, response: Response) => {
+             const { temperature, pressure, humidity, deviceId, readingDate } = request.body;
+             if (!temperature || !pressure || !humidity || !deviceId) {
+                 return response.status(400).send();
+             }
+             await this.dataService.addData({ temperature, pressure, humidity, deviceId, readingDate });
+             response.send('Added');
+    }
+
+    private deleteData = async (request: Request, response: Response) => {
+             const { id } = request.params;
+
+             const deletedData = await this.dataService.deleteData(id);
+             if (deletedData) {
+                 response.send('Deleted');
+             } else {
+                 response.status(404).send();
+             }
     }
 }
 
