@@ -2,8 +2,8 @@ import Controller from '../interfaces/controller.interface';
 import {Request, Response, NextFunction, Router} from 'express';
 import path from 'path';
 
-class IndexController implements Controller {
-    public path = '/';
+class DeviceController implements Controller {
+    public path = '/device/';
     public router = Router();
     public io: any;
 
@@ -13,13 +13,12 @@ class IndexController implements Controller {
     }
 
     private initializeRoutes() {
-        this.router.get(this.path + 'emit', this.emitReading);
-        this.router.get(this.path, this.serveIndex);
+        this.router.post(this.path + 'emit', this.emitReading);
 
     }
     private emitReading = async (request: Request, response: Response, next: NextFunction) => {
         try {
-            this.io.emit("message", 'nowy pomiar');
+            this.io.emit('sensor-data', {temperature: request.params.temperature,humidity: request.params.humidity,pressure:request.params.pressure});
             response.status(200).json({ res: "ok" });
             setInterval(() => this.io.emit('sensor-data', {temperature: 21.5,humidity: 55,pressure:1005}), 3000);
         } catch (error) {
@@ -34,4 +33,4 @@ class IndexController implements Controller {
     }
 }
 
-export default IndexController;
+export default DeviceController;
