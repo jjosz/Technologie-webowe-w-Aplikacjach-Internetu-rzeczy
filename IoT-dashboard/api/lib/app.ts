@@ -28,6 +28,11 @@ class App {
         });
     }
     private initializeMiddlewares(): void {
+        this.app.use(cors({
+            origin: "http://localhost:5173",
+            methods: ["GET", "POST"],
+            credentials: true
+        }));
         this.app.use(bodyParser.json());
     }
     private initializeSocket(): void {

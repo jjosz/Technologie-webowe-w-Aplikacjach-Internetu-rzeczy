@@ -7,6 +7,7 @@ class IndexController implements Controller {
     public router = Router();
     public io: any;
 
+
     constructor(io : any) {
         this.io = io;
         this.initializeRoutes();
@@ -15,6 +16,8 @@ class IndexController implements Controller {
     private initializeRoutes() {
         this.router.get(this.path + 'emit', this.emitReading);
         this.router.get(this.path, this.serveIndex);
+        this.router.post(this.path + 'sensor', this.receiveSensorData);
+
 
     }
     private emitReading = async (request: Request, response: Response, next: NextFunction) => {
@@ -27,6 +30,26 @@ class IndexController implements Controller {
             response.status(500).json({ error: "Błąd serwera" });
         }
     };
+    private receiveSensorData = async (request: Request, response: Response) => {
+            try {
+                const { temperature, humidity, pressure } = request.body;
+
+                const data = {
+                    temperature,
+                    humidity,
+                    pressure,
+                    timestamp: new Date().toISOString(),
+                };
+
+                this.io.emit("sensor-data", data);
+                console.log("Otrzymano dane z POST:", data);
+
+                response.status(200).json({ status: "ok", sent: data });
+            } catch (error) {
+                console.error("Błąd przy POST /sensor:", error);
+                response.status(500).json({ error: "Błąd serwera" });
+            }
+        };
 
 
     private serveIndex = async (request: Request, response: Response) => {

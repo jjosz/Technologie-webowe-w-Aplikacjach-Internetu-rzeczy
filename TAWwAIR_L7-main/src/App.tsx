@@ -17,6 +17,10 @@ function App() {
     const [message, setMessage] = useState(""); // Pozostawiamy możliwość wysyłania wiadomości
     const [messages, setMessages] = useState([]); // Pozostawiamy wiadomości, jeśli potrzebujesz
 
+
+    const [formTemp, setFormTemp] = useState("");
+    const [formHumidity, setFormHumidity] = useState("");
+    const [formPressure, setFormPressure] = useState("");
     // Odbieranie danych z serwera WebSocket (np. temperatury, wilgotności, ciśnienia)
     useEffect(() => {
         socket.on("sensor-data", (data: SensorData) => {
@@ -33,6 +37,26 @@ function App() {
         if (message) {
             socket.emit("message", message);
             setMessage("");
+        }
+    };
+const sendSensorData = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/sensor", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    temperature: parseFloat(formTemp),
+                    humidity: parseFloat(formHumidity),
+                    pressure: parseFloat(formPressure),
+                }),
+            });
+
+            const result = await res.json();
+            console.log("Wysłano dane:", result);
+        } catch (err) {
+            console.error("Błąd wysyłania danych:", err);
         }
     };
 
@@ -69,6 +93,36 @@ function App() {
                     ))}
                 </div>
             </div>
+            {/* FORMULARZ WYSYŁKI POSTEM */}
+                        <div style={{ marginTop: "20px" }}>
+                            <h3>Wyślij symulowany pomiar (POST):</h3>
+                            <input
+                                type="number"
+                                value={formTemp}
+                                onChange={(e) => setFormTemp(e.target.value)}
+                                placeholder="Temperatura (°C)"
+                            />
+                            <br />
+                            <input
+                                type="number"
+                                value={formHumidity}
+                                onChange={(e) => setFormHumidity(e.target.value)}
+                                placeholder="Wilgotność (%)"
+                            />
+                            <br />
+                            <input
+                                type="number"
+                                value={formPressure}
+                                onChange={(e) => setFormPressure(e.target.value)}
+                                placeholder="Ciśnienie (hPa)"
+                            />
+                            <br />
+                            <button onClick={sendSensorData} style={{ marginTop: "10px" }}>
+                                Wyślij pomiar
+                            </button>
+                        </div>
+
+                        <hr />
         </div>
     );
 }
